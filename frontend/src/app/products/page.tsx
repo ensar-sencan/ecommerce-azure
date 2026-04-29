@@ -1,0 +1,103 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import Navbar from '@/components/layout/Navbar';
+import api from '@/lib/api';
+import { useCartStore } from '@/store/cartStore';
+import { Search, Star, ShoppingCart } from 'lucide-react';
+
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  imageUrl: string;
+  category: string;
+  avgRating: number;
+  reviewCount: number;
+  stock: number;
+}
+
+export default function ProductsPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
+  const add = useCartStore(s => s.add);
+
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      setLoading(true);
+      api.get('/api/products', { params: { search, limit: 24 } })
+        .then(r => setProducts(r.data.products))
+        .finally(() => setLoading(false));
+    }, 350);
+    return () => clearTimeout(delay);
+  }, [search]);
+
+  return (
+    <>
+      <Navbar />
+      <main className="max-w-7xl mx-auto px-4 py-8">
+        {/* Search bar */}
+        <div className="relative mb-8 max-w-lg">
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Ürün ara..."
+            className="input pl-10"
+          />
+        </div>
+
+        {loading ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="bg-gray-100 rounded-xl h-64 animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {products.map(p => (
+              <div key={p.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition group">
+                <Link href={`/products/${p.id}`}>
+                  <div className="relative h-44 bg-gray-50">
+                    {p.imageUrl ? (
+                      <Image src={p.imageUrl} alt={p.name} fill className="object-cover group-hover:scale-105 transition" />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-4xl">📦</div>
+                    )}
+                  </div>
+                </Link>
+                <div className="p-4">
+                  <p className="text-xs text-gray-400 mb-1">{p.category}</p>
+                  <Link href={`/products/${p.id}`}>
+                    <h3 className="font-medium text-sm line-clamp-2 mb-2 hover:text-primary-600">{p.name}</h3>
+                  </Link>
+                  <div className="flex items-center gap-1 mb-3">
+                    <Star size={12} className="text-yellow-400 fill-yellow-400" />
+                    <span className="text-xs text-gray-500">{Number(p.avgRating).toFixed(1)} ({p.reviewCount})</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-primary-600">₺{Number(p.price).toLocaleString('tr-TR')}</span>
+                    <button
+                      onClick={() => add({ productId: p.id, name: p.name, price: p.price, imageUrl: p.imageUrl })}
+                      disabled={p.stock === 0}
+                      className="p-2 rounded-lg bg-primary-50 text-primary-600 hover:bg-primary-100 disabled:opacity-50 transition"
+                    >
+                      <ShoppingCart size={16} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!loading && products.length === 0 && (
+          <p className="text-center text-gray-400 py-24">Ürün bulunamadı.</p>
+        )}
+      </main>
+    </>
+  );
+}
