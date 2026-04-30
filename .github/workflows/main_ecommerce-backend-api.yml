@@ -28,12 +28,13 @@ jobs:
           npm install
           npm run build --if-present
           npm run test --if-present
+        working-directory: backend
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: .
+          path: backend
 
   deploy:
     runs-on: ubuntu-latest
@@ -47,6 +48,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
+          path: backend
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -61,5 +63,5 @@ jobs:
         with:
           app-name: 'ecommerce-backend-api'
           slot-name: 'Production'
-          package: .
+          package: backend
           
