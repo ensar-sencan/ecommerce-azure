@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
 import { useCartStore } from '@/store/cartStore';
@@ -17,6 +17,17 @@ export default function CheckoutPage() {
   const [step, setStep] = useState<Step>('review');
   const [orderId, setOrderId] = useState<number | null>(null);
   const [error, setError] = useState('');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && items.length === 0 && step !== 'placing' && step !== 'success') {
+      router.replace('/cart');
+    }
+  }, [mounted, items.length, step, router]);
 
   async function placeOrder() {
     setStep('placing');
@@ -54,8 +65,9 @@ export default function CheckoutPage() {
     );
   }
 
-  if (items.length === 0 && step !== 'placing') {
-    router.replace('/cart');
+  if (!mounted) return null;
+
+  if (items.length === 0 && step !== 'placing' && step !== 'success') {
     return null;
   }
 
