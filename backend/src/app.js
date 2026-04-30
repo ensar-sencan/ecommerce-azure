@@ -26,7 +26,11 @@ app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
 // CORS
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: [
+    process.env.FRONTEND_URL || 'http://localhost:3000',
+    'https://green-ground-037b99003.7.azurestaticapps.net',
+    'http://localhost:3000'
+  ],
   credentials: true,
 }));
 

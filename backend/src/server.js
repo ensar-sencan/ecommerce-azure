@@ -9,7 +9,7 @@ if (process.env.NODE_ENV === 'production' && process.env.APPINSIGHTS_INSTRUMENTA
 const app = require('./app');
 const { getPool } = require('./config/database');
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || process.env.WEBSITES_PORT || 8080;
 
 async function startServer() {
   try {
