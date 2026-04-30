@@ -67,7 +67,7 @@ export default function CheckoutPage() {
 
   if (!mounted) return null;
 
-  if (items.length === 0 && step !== 'placing' && step !== 'success') {
+  if (items.length === 0 && (step as string) !== 'placing' && (step as string) !== 'success') {
     return null;
   }
 
