@@ -1,38 +1,56 @@
 -- ============================================================
--- Migration 003: Views & Stored Procedures
+-- Migration 003: View'lar ve Stored Procedure'lar
 -- ============================================================
 
--- View: Product summary with ratings (used by listing queries)
+-- Ürün özet view'ı (listeleme sorgularında kullanılır)
 CREATE OR ALTER VIEW vw_ProductSummary AS
 SELECT
     p.id,
     p.sellerId,
     p.categoryId,
+    p.brandId,
     p.name,
+    p.slug,
     p.price,
+    p.discountedPrice,
+    p.discountRate,
     p.stock,
     p.imageUrl,
+    p.isFeatured,
+    p.isFlash,
+    p.freeShipping,
+    p.isOrganic,
+    p.volume,
+    p.skinType,
     p.createdAt,
-    c.name                                              AS category,
+    c.name                                              AS categoryName,
+    c.slug                                              AS categorySlug,
+    b.name                                              AS brandName,
+    b.slug                                              AS brandSlug,
     u.name                                              AS sellerName,
     ISNULL(AVG(CAST(r.rating AS FLOAT)), 0)             AS avgRating,
     COUNT(r.id)                                         AS reviewCount,
     ISNULL(ss.views, 0)                                 AS views,
     ISNULL(ss.sales, 0)                                 AS sales
 FROM Products p
-JOIN Categories c  ON c.id = p.categoryId
-JOIN Users u       ON u.id = p.sellerId
-LEFT JOIN Reviews r ON r.productId = p.id
+JOIN Categories c   ON c.id = p.categoryId
+LEFT JOIN Brands b  ON b.id = p.brandId
+JOIN Users u        ON u.id = p.sellerId
+LEFT JOIN Reviews r ON r.productId = p.id AND r.isApproved = 1
 LEFT JOIN SellerStats ss ON ss.productId = p.id AND ss.sellerId = p.sellerId
-GROUP BY p.id, p.sellerId, p.categoryId, p.name, p.price, p.stock,
-         p.imageUrl, p.createdAt, c.name, u.name, ss.views, ss.sales;
+WHERE p.isActive = 1
+GROUP BY p.id, p.sellerId, p.categoryId, p.brandId, p.name, p.slug,
+         p.price, p.discountedPrice, p.discountRate, p.stock, p.imageUrl,
+         p.isFeatured, p.isFlash, p.freeShipping, p.isOrganic, p.volume,
+         p.skinType, p.createdAt, c.name, c.slug, b.name, b.slug, u.name,
+         ss.views, ss.sales;
 GO
 
--- View: Seller daily revenue (for trend charts)
+-- Satıcı günlük gelir view'ı (trend grafikleri için)
 CREATE OR ALTER VIEW vw_SellerDailyRevenue AS
 SELECT
     p.sellerId,
-    CAST(o.createdAt AS DATE)   AS saleDate,
+    CAST(o.createdAt AS DATE)       AS saleDate,
     SUM(oi.quantity * oi.unitPrice) AS dailyRevenue,
     SUM(oi.quantity)                AS unitsSold
 FROM Orders o
@@ -42,12 +60,11 @@ WHERE o.status != 'cancelled'
 GROUP BY p.sellerId, CAST(o.createdAt AS DATE);
 GO
 
--- Stored Procedure: Recalculate all SellerStats from scratch (used by Azure Function)
+-- Stored Procedure: Satıcı istatistiklerini yeniden hesapla
 CREATE OR ALTER PROCEDURE sp_RecalcSellerStats
 AS
 BEGIN
     SET NOCOUNT ON;
-
     MERGE SellerStats AS target
     USING (
         SELECT
@@ -63,9 +80,12 @@ BEGIN
     ) AS source
     ON target.sellerId = source.sellerId AND target.productId = source.productId
     WHEN MATCHED THEN
-        UPDATE SET sales = source.totalSales, revenue = source.totalRevenue, updatedAt = GETUTCDATE()
+        UPDATE SET sales = source.totalSales,
+                   revenue = source.totalRevenue,
+                   updatedAt = GETUTCDATE()
     WHEN NOT MATCHED THEN
         INSERT (sellerId, productId, views, sales, revenue, updatedAt)
-        VALUES (source.sellerId, source.productId, 0, source.totalSales, source.totalRevenue, GETUTCDATE());
+        VALUES (source.sellerId, source.productId, 0,
+                source.totalSales, source.totalRevenue, GETUTCDATE());
 END;
 GO
