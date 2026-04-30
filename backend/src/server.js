@@ -15,14 +15,14 @@ async function startServer() {
   try {
     await getPool();
     console.log('Azure SQL Database connected.');
-
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT} [${process.env.NODE_ENV}]`);
-    });
   } catch (err) {
-    console.error('Failed to start server:', err.message);
-    process.exit(1);
+    console.error('Database connection failed:', err.message);
+    console.log('Server starting without database connection...');
   }
+
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT} [${process.env.NODE_ENV}]`);
+  });
 }
 
 startServer();
