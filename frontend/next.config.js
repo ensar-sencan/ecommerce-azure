@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ecommerce-backend-api.azurewebsites.net';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ecommerce-azure.onrender.com';
 
 const nextConfig = {
   output: 'standalone',
