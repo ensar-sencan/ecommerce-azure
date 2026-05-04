@@ -90,15 +90,19 @@ async function createProduct(req, res, next) {
     const { name, description, price, stock, categoryId, imageUrl } = req.body;
     const sellerId = req.user.id;
 
+    // Default image if not provided
+    const finalImageUrl = imageUrl || 'https://ecommercestore2026.blob.core.windows.net/product-images/default-product.jpg';
+
     const result = await query(
       `INSERT INTO Products (sellerId, categoryId, name, description, price, stock, imageUrl, createdAt)
        OUTPUT INSERTED.*
        VALUES (@sellerId, @categoryId, @name, @description, @price, @stock, @imageUrl, GETUTCDATE())`,
-      { sellerId, categoryId: parseInt(categoryId), name, description, price: parseFloat(price), stock: parseInt(stock), imageUrl }
+      { sellerId, categoryId: parseInt(categoryId), name, description, price: parseFloat(price), stock: parseInt(stock), imageUrl: finalImageUrl }
     );
 
     res.status(201).json(result.recordset[0]);
   } catch (err) {
+    console.error('Create product error:', err);
     next(err);
   }
 }
