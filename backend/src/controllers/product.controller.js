@@ -5,7 +5,7 @@ async function listProducts(req, res, next) {
     const { category, search, minPrice, maxPrice, page = 1, limit = 20, sort = 'createdAt' } = req.query;
     const offset = (page - 1) * limit;
 
-    let whereClause = 'WHERE p.stock > 0';
+    let whereClause = 'WHERE p.stock > 0 AND p.isActive = 1';
     const params = { limit: parseInt(limit), offset: parseInt(offset) };
 
     if (category) { whereClause += ' AND p.categoryId = @categoryId'; params.categoryId = category; }
@@ -17,7 +17,8 @@ async function listProducts(req, res, next) {
     const orderBy = allowedSorts[sort] || 'p.createdAt DESC';
 
     const result = await query(
-      `SELECT p.id, p.name, p.price, p.stock, p.imageUrl, p.createdAt,
+      `SELECT p.id, p.name, p.slug, p.price, p.discountedPrice, p.discountRate, 
+              p.stock, p.imageUrl, p.isFeatured, p.freeShipping, p.createdAt,
               c.name AS category, u.name AS sellerName,
               ISNULL(AVG(CAST(r.rating AS FLOAT)), 0) AS avgRating,
               COUNT(r.id) AS reviewCount
@@ -26,14 +27,18 @@ async function listProducts(req, res, next) {
        JOIN Users u ON p.sellerId = u.id
        LEFT JOIN Reviews r ON r.productId = p.id
        ${whereClause}
-       GROUP BY p.id, p.name, p.price, p.stock, p.imageUrl, p.createdAt, c.name, u.name
+       GROUP BY p.id, p.name, p.slug, p.price, p.discountedPrice, p.discountRate,
+                p.stock, p.imageUrl, p.isFeatured, p.freeShipping, p.createdAt, 
+                c.name, u.name
        ORDER BY ${orderBy}
        OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY`,
       params
     );
 
     const countResult = await query(
-      `SELECT COUNT(DISTINCT p.id) AS total FROM Products p ${whereClause}`,
+      `SELECT COUNT(DISTINCT p.id) AS total FROM Products p 
+       JOIN Categories c ON p.categoryId = c.id
+       ${whereClause}`,
       params
     );
 
@@ -44,6 +49,7 @@ async function listProducts(req, res, next) {
       pages: Math.ceil(countResult.recordset[0].total / limit),
     });
   } catch (err) {
+    console.error('List products error:', err);
     next(err);
   }
 }
