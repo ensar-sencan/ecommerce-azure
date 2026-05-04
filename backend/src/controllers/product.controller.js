@@ -61,8 +61,11 @@ async function getProduct(req, res, next) {
        JOIN Users u ON p.sellerId = u.id
        LEFT JOIN Reviews r ON r.productId = p.id
        WHERE p.id = @id
-       GROUP BY p.id, p.sellerId, p.categoryId, p.name, p.description,
-                p.price, p.stock, p.imageUrl, p.createdAt, c.name, u.name`,
+       GROUP BY p.id, p.sellerId, p.categoryId, p.brandId, p.name, p.slug, p.description,
+                p.ingredients, p.howToUse, p.skinType, p.volume, p.barcode,
+                p.price, p.discountedPrice, p.discountRate, p.stock, p.imageUrl,
+                p.isActive, p.isFeatured, p.isFlash, p.freeShipping, p.isOrganic,
+                p.createdAt, c.name, u.name`,
       { id: parseInt(id) }
     );
 
@@ -81,6 +84,7 @@ async function getProduct(req, res, next) {
 
     res.json(result.recordset[0]);
   } catch (err) {
+    console.error('Get product error:', err);
     next(err);
   }
 }
