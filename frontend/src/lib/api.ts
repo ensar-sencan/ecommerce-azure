@@ -1,8 +1,9 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
-  timeout: 10000,
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://ecommerce-azure.onrender.com',
+  timeout: 30000, // 30 seconds for Render cold start
+  withCredentials: true,
 });
 
 api.interceptors.request.use((config) => {
