@@ -1,6 +1,9 @@
 const sql = require('mssql');
 
-const config = {
+// Try connection string format for Azure SQL
+const connectionString = process.env.DB_CONNECTION_STRING;
+
+const config = connectionString ? connectionString : {
   server: process.env.DB_SERVER,
   database: process.env.DB_NAME,
   user: process.env.DB_USER,
@@ -22,7 +25,19 @@ let pool;
 
 async function getPool() {
   if (!pool) {
-    pool = await sql.connect(config);
+    try {
+      pool = await sql.connect(config);
+      console.log('Database connection successful');
+    } catch (err) {
+      console.error('Database connection error details:', {
+        message: err.message,
+        code: err.code,
+        server: process.env.DB_SERVER,
+        database: process.env.DB_NAME,
+        user: process.env.DB_USER,
+      });
+      throw err;
+    }
   }
   return pool;
 }
