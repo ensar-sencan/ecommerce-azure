@@ -35,6 +35,7 @@ app.use(cors({
 }));
 
 // Rate limiting
+app.set('trust proxy', 1);
 app.use('/api/', rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200,
@@ -44,7 +45,19 @@ app.use('/api/', rateLimit({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Health check
+// Health check - Root route for Render.com
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    message: 'E-commerce API is running',
+    timestamp: new Date().toISOString() 
+  });
+});
+
+app.head('/', (req, res) => {
+  res.status(200).end();
+});
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
