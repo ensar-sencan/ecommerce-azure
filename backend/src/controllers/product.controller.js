@@ -100,14 +100,36 @@ async function createProduct(req, res, next) {
     const { name, description, price, stock, categoryId, imageUrl } = req.body;
     const sellerId = req.user.id;
 
+    // Generate slug from product name
+    const slug = name
+      .toLowerCase()
+      .replace(/ğ/g, 'g')
+      .replace(/ü/g, 'u')
+      .replace(/ş/g, 's')
+      .replace(/ı/g, 'i')
+      .replace(/ö/g, 'o')
+      .replace(/ç/g, 'c')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .substring(0, 100);
+
     // Default image if not provided
     const finalImageUrl = imageUrl || 'https://ecommercestore2026.blob.core.windows.net/product-images/default-product.jpg';
 
     const result = await query(
-      `INSERT INTO Products (sellerId, categoryId, name, description, price, stock, imageUrl, createdAt)
+      `INSERT INTO Products (sellerId, categoryId, name, slug, description, price, stock, imageUrl, createdAt)
        OUTPUT INSERTED.*
-       VALUES (@sellerId, @categoryId, @name, @description, @price, @stock, @imageUrl, GETUTCDATE())`,
-      { sellerId, categoryId: parseInt(categoryId), name, description, price: parseFloat(price), stock: parseInt(stock), imageUrl: finalImageUrl }
+       VALUES (@sellerId, @categoryId, @name, @slug, @description, @price, @stock, @imageUrl, GETUTCDATE())`,
+      { 
+        sellerId, 
+        categoryId: parseInt(categoryId), 
+        name, 
+        slug,
+        description, 
+        price: parseFloat(price), 
+        stock: parseInt(stock), 
+        imageUrl: finalImageUrl 
+      }
     );
 
     res.status(201).json(result.recordset[0]);
@@ -128,12 +150,34 @@ async function updateProduct(req, res, next) {
       return res.status(403).json({ error: 'Access denied.' });
     }
 
+    // Generate slug from product name
+    const slug = name
+      .toLowerCase()
+      .replace(/ğ/g, 'g')
+      .replace(/ü/g, 'u')
+      .replace(/ş/g, 's')
+      .replace(/ı/g, 'i')
+      .replace(/ö/g, 'o')
+      .replace(/ç/g, 'c')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .substring(0, 100);
+
     const result = await query(
-      `UPDATE Products SET name = @name, description = @description, price = @price,
+      `UPDATE Products SET name = @name, slug = @slug, description = @description, price = @price,
               stock = @stock, categoryId = @categoryId, imageUrl = @imageUrl
        OUTPUT INSERTED.*
        WHERE id = @id`,
-      { id: parseInt(id), name, description, price: parseFloat(price), stock: parseInt(stock), categoryId: parseInt(categoryId), imageUrl }
+      { 
+        id: parseInt(id), 
+        name, 
+        slug,
+        description, 
+        price: parseFloat(price), 
+        stock: parseInt(stock), 
+        categoryId: parseInt(categoryId), 
+        imageUrl 
+      }
     );
 
     res.json(result.recordset[0]);

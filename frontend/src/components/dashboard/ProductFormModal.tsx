@@ -173,8 +173,8 @@ export default function ProductFormModal({ product, onClose, onSave }: Props) {
                 type="number"
                 min="0"
                 step="0.01"
-                value={form.price}
-                onChange={e => set('price', parseFloat(e.target.value))}
+                value={form.price || ''}
+                onChange={e => set('price', e.target.value === '' ? 0 : parseFloat(e.target.value))}
                 required
                 className="input"
               />
@@ -184,8 +184,8 @@ export default function ProductFormModal({ product, onClose, onSave }: Props) {
               <input
                 type="number"
                 min="0"
-                value={form.stock}
-                onChange={e => set('stock', parseInt(e.target.value))}
+                value={form.stock || ''}
+                onChange={e => set('stock', e.target.value === '' ? 0 : parseInt(e.target.value))}
                 required
                 className="input"
               />
