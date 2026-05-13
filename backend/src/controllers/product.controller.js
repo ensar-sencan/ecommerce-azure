@@ -100,6 +100,20 @@ async function createProduct(req, res, next) {
     const { name, description, price, stock, categoryId, imageUrl } = req.body;
     const sellerId = req.user.id;
 
+    // Validation
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: 'Ürün adı gereklidir.' });
+    }
+    if (!categoryId) {
+      return res.status(400).json({ error: 'Kategori seçilmelidir.' });
+    }
+    if (price === undefined || price === null || price < 0) {
+      return res.status(400).json({ error: 'Geçerli bir fiyat giriniz.' });
+    }
+    if (stock === undefined || stock === null || stock < 0) {
+      return res.status(400).json({ error: 'Geçerli bir stok miktarı giriniz.' });
+    }
+
     // Generate slug from product name
     const slug = name
       .toLowerCase()
@@ -113,7 +127,8 @@ async function createProduct(req, res, next) {
       .replace(/^-+|-+$/g, '')
       .substring(0, 100);
 
-    // Default image if not provided
+    // Default values
+    const finalDescription = description || '';
     const finalImageUrl = imageUrl || 'https://ecommercestore2026.blob.core.windows.net/product-images/default-product.jpg';
 
     const result = await query(
@@ -123,9 +138,9 @@ async function createProduct(req, res, next) {
       { 
         sellerId, 
         categoryId: parseInt(categoryId), 
-        name, 
+        name: name.trim(), 
         slug,
-        description, 
+        description: finalDescription, 
         price: parseFloat(price), 
         stock: parseInt(stock), 
         imageUrl: finalImageUrl 
@@ -135,6 +150,7 @@ async function createProduct(req, res, next) {
     res.status(201).json(result.recordset[0]);
   } catch (err) {
     console.error('Create product error:', err);
+    console.error('Request body:', req.body);
     next(err);
   }
 }
