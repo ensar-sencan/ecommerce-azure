@@ -1,9 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import SellerDashboard from '@/components/dashboard/SellerDashboard';
 import CompetitorPanel from '@/components/dashboard/CompetitorPanel';
+import CompetitorDashboard from '@/components/dashboard/CompetitorDashboard';
+import AICoach from '@/components/dashboard/AICoach';
+import api from '@/lib/api';
+import { useAuthStore } from '@/store/authStore';
 import { BarChart2, Users, Zap } from 'lucide-react';
 
 const tabs = [
@@ -42,23 +46,9 @@ export default function DashboardPage() {
         </div>
 
         {activeTab === 'stats'      && <SellerDashboard />}
-        {activeTab === 'competitor' && <CompetitorPanel />}
-        {activeTab === 'ai'         && <AIInsightsPanel />}
+        {activeTab === 'competitor' && <CompetitorDashboard />}
+        {activeTab === 'ai'         && <AICoach />}
       </main>
     </>
-  );
-}
-
-function AIInsightsPanel() {
-  return (
-    <div className="card text-center py-16">
-      <p className="text-4xl mb-4">🤖</p>
-      <h3 className="font-semibold text-xl mb-2">AI Destekli Analizler</h3>
-      <p className="text-gray-500 mb-6">
-        Azure OpenAI tarafından üretilen kişiselleştirilmiş öneriler.<br/>
-        Premium plan gerektirmektedir.
-      </p>
-      <button className="btn-primary">Premium'a Geç</button>
-    </div>
   );
 }

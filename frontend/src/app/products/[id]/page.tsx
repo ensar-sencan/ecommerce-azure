@@ -10,6 +10,33 @@ import { useCartStore } from '@/store/cartStore';
 import { useAuthStore } from '@/store/authStore';
 import { Star, ShoppingCart, ArrowLeft, Package, Truck } from 'lucide-react';
 
+// Kategori bazlı görsel sistem (fallback için)
+function getCategoryEmoji(category: string): string {
+  const emojiMap: Record<string, string> = {
+    'Cilt Bakimi': '🧴',
+    'Günes Bakimi': '☀️',
+    'Saç Bakimi': '💇',
+    'Anne & Bebek': '👶',
+    'Vitamin & Saglik': '💊',
+    'Makyaj': '💄',
+    'Parfüm': '🌸',
+  };
+  return emojiMap[category] || '🛍️';
+}
+
+function getCategoryGradient(category: string): string {
+  const gradientMap: Record<string, string> = {
+    'Cilt Bakimi': 'from-blue-400 to-purple-500',
+    'Günes Bakimi': 'from-yellow-400 to-orange-500',
+    'Saç Bakimi': 'from-pink-400 to-red-500',
+    'Anne & Bebek': 'from-green-400 to-teal-500',
+    'Vitamin & Saglik': 'from-indigo-400 to-blue-500',
+    'Makyaj': 'from-rose-400 to-pink-500',
+    'Parfüm': 'from-purple-400 to-indigo-500',
+  };
+  return gradientMap[category] || 'from-gray-400 to-gray-500';
+}
+
 interface Product {
   id: number;
   name: string;
@@ -89,12 +116,21 @@ export default function ProductDetailPage() {
 
         <div className="grid md:grid-cols-2 gap-12 mb-16">
           {/* Image */}
-          <div className="relative h-96 bg-gray-50 rounded-2xl overflow-hidden border border-gray-200">
+          <div className={`relative h-96 bg-gradient-to-br ${getCategoryGradient(product.category)} rounded-2xl overflow-hidden border border-gray-200 flex items-center justify-center`}>
             {product.imageUrl ? (
-              <Image src={product.imageUrl} alt={product.name} fill className="object-contain p-4" />
+              <Image 
+                src={product.imageUrl} 
+                alt={product.name} 
+                fill 
+                className="object-cover"
+                unoptimized
+              />
             ) : (
-              <div className="flex items-center justify-center h-full text-8xl">📦</div>
+              <div className="text-9xl">{getCategoryEmoji(product.category)}</div>
             )}
+            <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-full text-sm font-medium text-gray-700">
+              {product.category}
+            </div>
           </div>
 
           {/* Info */}

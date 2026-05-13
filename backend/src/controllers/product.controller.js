@@ -132,9 +132,9 @@ async function createProduct(req, res, next) {
     const finalImageUrl = imageUrl || 'https://ecommercestore2026.blob.core.windows.net/product-images/default-product.jpg';
 
     const result = await query(
-      `INSERT INTO Products (sellerId, categoryId, name, slug, description, price, stock, imageUrl, createdAt)
+      `INSERT INTO Products (sellerId, categoryId, name, slug, description, price, stock, imageUrl, isActive, createdAt)
        OUTPUT INSERTED.*
-       VALUES (@sellerId, @categoryId, @name, @slug, @description, @price, @stock, @imageUrl, GETUTCDATE())`,
+       VALUES (@sellerId, @categoryId, @name, @slug, @description, @price, @stock, @imageUrl, 1, GETUTCDATE())`,
       { 
         sellerId, 
         categoryId: parseInt(categoryId), 

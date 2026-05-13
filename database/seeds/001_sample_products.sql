@@ -52,5 +52,5 @@ VALUES
 ('Listerine Ağız Çalkalama Suyu', 'Ağız hijyeni için antiseptik ağız çalkalama suyu. 500ml.', 79.90, 180, 6, @sellerId, 'https://ecommercestore2026.blob.core.windows.net/product-images/listerine.jpg', GETUTCDATE());
 
 PRINT 'Demo ürünleri başarıyla eklendi!';
-PRINT 'Seller Email: seller@demo.com';
-PRINT 'Seller Password: Demo1234';
+PRINT 'Seller Email: test@gmail.com';
+PRINT 'Seller Password: 12345678';

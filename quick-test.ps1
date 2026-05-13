@@ -81,7 +81,9 @@ try {
 # Test 6: Tek Ürün Detayı
 Write-Host "`n✅ TEST 6: Ürün Detayı" -ForegroundColor Yellow
 try {
-    $product = Invoke-RestMethod -Uri "$baseUrl/api/products/1" -Method Get
+    # İlk ürünün ID'sini al
+    $firstProductId = $products.products[0].id
+    $product = Invoke-RestMethod -Uri "$baseUrl/api/products/$firstProductId" -Method Get
     Write-Host "   Ürün: $($product.name)" -ForegroundColor Green
     Write-Host "   Fiyat: $($product.price)₺" -ForegroundColor White
     Write-Host "   Stok: $($product.stock)" -ForegroundColor White

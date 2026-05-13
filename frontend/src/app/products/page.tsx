@@ -8,6 +8,33 @@ import api from '@/lib/api';
 import { useCartStore } from '@/store/cartStore';
 import { Search, Star, ShoppingCart } from 'lucide-react';
 
+// Kategori bazlı görsel sistem (fallback için)
+function getCategoryEmoji(category: string): string {
+  const emojiMap: Record<string, string> = {
+    'Cilt Bakimi': '🧴',
+    'Günes Bakimi': '☀️',
+    'Saç Bakimi': '💇',
+    'Anne & Bebek': '👶',
+    'Vitamin & Saglik': '💊',
+    'Makyaj': '💄',
+    'Parfüm': '🌸',
+  };
+  return emojiMap[category] || '🛍️';
+}
+
+function getCategoryGradient(category: string): string {
+  const gradientMap: Record<string, string> = {
+    'Cilt Bakimi': 'from-blue-400 to-purple-500',
+    'Günes Bakimi': 'from-yellow-400 to-orange-500',
+    'Saç Bakimi': 'from-pink-400 to-red-500',
+    'Anne & Bebek': 'from-green-400 to-teal-500',
+    'Vitamin & Saglik': 'from-indigo-400 to-blue-500',
+    'Makyaj': 'from-rose-400 to-pink-500',
+    'Parfüm': 'from-purple-400 to-indigo-500',
+  };
+  return gradientMap[category] || 'from-gray-400 to-gray-500';
+}
+
 interface Product {
   id: number;
   name: string;
@@ -28,8 +55,16 @@ export default function ProductsPage() {
   useEffect(() => {
     const delay = setTimeout(() => {
       setLoading(true);
+      console.log('🔍 Fetching products with search:', search);
       api.get('/api/products', { params: { search, limit: 24 } })
-        .then(r => setProducts(r.data.products))
+        .then(r => {
+          console.log('✅ Products received:', r.data);
+          setProducts(r.data.products);
+        })
+        .catch(err => {
+          console.error('❌ Error fetching products:', err);
+          console.error('Error details:', err.response?.data || err.message);
+        })
         .finally(() => setLoading(false));
     }, 350);
     return () => clearTimeout(delay);
@@ -61,12 +96,21 @@ export default function ProductsPage() {
             {products.map(p => (
               <div key={p.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition group">
                 <Link href={`/products/${p.id}`}>
-                  <div className="relative h-44 bg-gray-50">
+                  <div className={`relative h-44 bg-gradient-to-br ${getCategoryGradient(p.category)} flex items-center justify-center`}>
                     {p.imageUrl ? (
-                      <Image src={p.imageUrl} alt={p.name} fill className="object-cover group-hover:scale-105 transition" />
+                      <Image 
+                        src={p.imageUrl} 
+                        alt={p.name} 
+                        fill 
+                        className="object-cover group-hover:scale-105 transition"
+                        unoptimized
+                      />
                     ) : (
-                      <div className="flex items-center justify-center h-full text-4xl">📦</div>
+                      <div className="text-7xl">{getCategoryEmoji(p.category)}</div>
                     )}
+                    <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium text-gray-700">
+                      {p.category}
+                    </div>
                   </div>
                 </Link>
                 <div className="p-4">

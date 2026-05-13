@@ -20,6 +20,10 @@ export default function SellerDashboard() {
   useEffect(() => {
     api.get('/api/analytics/stats')
       .then(r => setStats(r.data))
+      .catch(err => {
+        console.error('Stats API error:', err);
+        setStats(null);
+      })
       .finally(() => setLoading(false));
   }, []);
 

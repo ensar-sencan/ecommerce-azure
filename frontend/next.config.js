@@ -10,6 +10,11 @@ const nextConfig = {
         hostname: '*.blob.core.windows.net',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        pathname: '/**',
+      },
     ],
   },
   async rewrites() {
