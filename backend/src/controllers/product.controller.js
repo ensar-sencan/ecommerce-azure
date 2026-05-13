@@ -114,8 +114,8 @@ async function createProduct(req, res, next) {
       return res.status(400).json({ error: 'Geçerli bir stok miktarı giriniz.' });
     }
 
-    // Generate slug from product name
-    const slug = name
+    // Generate unique slug from product name
+    const baseSlug = name
       .toLowerCase()
       .replace(/ğ/g, 'g')
       .replace(/ü/g, 'u')
@@ -125,7 +125,10 @@ async function createProduct(req, res, next) {
       .replace(/ç/g, 'c')
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '')
-      .substring(0, 100);
+      .substring(0, 90);
+    
+    // Add timestamp to make it unique
+    const slug = `${baseSlug}-${Date.now()}`;
 
     // Default values
     const finalDescription = description || '';
